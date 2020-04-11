@@ -86,7 +86,7 @@ hook.Add('MapVoteWon', 'MurderMapStatistics', function(map, total, votes)
     local q = STATS.Queries['murder_map']
     q:setString(1, current_time)
     q:setString(2, map)
-    q:setNumber(3, total)
+    q:setNumber(3, player.GetCount())
     q:setNumber(4, votes)
     q:start()
 end)
