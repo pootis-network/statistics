@@ -32,3 +32,6 @@ end)
 hook.Add('ShutDown', 'SaveStatisticsOnShutdown', function()
     STATS:UpdateStatistics()
 end)
+
+-- Load component modules
+include('stats_playtime.lua')
