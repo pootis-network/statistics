@@ -32,9 +32,11 @@ end)
 
 -- Last-ditch attempt to save before shutdown
 -- This hook is probably called too late for queries to run, but it's worth a try
-hook.Add('ShutDown', 'SaveStatisticsOnShutdown', function()
-    STATS:UpdateStatistics()
-end)
+hook.Add('ShutDown', 'SaveStatisticsOnShutdown', function() STATS:UpdateStatistics() end)
+
+-- Safer saving functions
+hook.Add('MapVoteWon', 'SaveStatisticsOnShutdown', function() STATS:UpdateStatistics() end)
+hook.Add('GameEnd', 'SaveStatisticsOnShutdown', function() STATS:UpdateStatistics() end)
 
 -- Load component modules
 include('stats_playtime.lua')
