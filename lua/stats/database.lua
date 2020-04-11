@@ -6,7 +6,7 @@ include('db_config.lua') -- don't leak our password
     This is callback based, running the callback function when a connection is established
     This should (hopefully) be the most stable way to keep connected to a database
 ]]--
-function STATS:GetConnection(callback)
+function STATS:GetConnection()
     if !self.Database then
         -- Create the database connection
         self.Database = mysqloo.connect(STATS.DB_IP, STATS.DB_USERNAME, STATS.DB_PASSWORD, STATS.DB_DATABASE)
