@@ -6,10 +6,13 @@ STATS.UpdateTime = 120
 -- Include the database helper immediately
 include('database.lua')
 
+local supported_gamemodes = {
+    ["murder"] = true,
+}
 -- Load gamemode-specific statistics managers
 hook.Add('Initialize', 'LoadGamemodeStatistics', function()
-    if GAMEMODE_NAME == 'murder' then
-        include('stats/gamemodes/murder.lua')
+    if supported_gamemodes[GAMEMODE_NAME] then
+        include('stats/gamemodes/' .. GAMEMODE_NAME .. '.lua')
     end
 end)
 
