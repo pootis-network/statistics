@@ -54,6 +54,8 @@ hook.Add('PlayerPickupLoot', 'MurderLootStatistic', function(ply)
 end)
 
 hook.Add('PlayerDeath', 'MurderKillStatistics', function(victim, inflictor, attacker)
+    if GAMEMODE.RoundStage != GAMEMODE.Round.Playing then return end
+
     if victim == attacker then return end
     if not attacker:IsPlayer() then return end
     if not attacker.MurderStats then return end
