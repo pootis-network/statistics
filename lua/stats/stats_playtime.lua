@@ -38,8 +38,9 @@ function STATS:GetInitialPlaytime(ply)
 end
 
 function STATS:UpdatePlaytime(ply)
+    if not IsValid(ply) then return end
     if !ply.JoinTime or !ply.Playtime then
-        GetInitialPlaytime(ply)
+        STATS:GetInitialPlaytime(ply)
         return
     end
 

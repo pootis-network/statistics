@@ -39,12 +39,14 @@ hook.Add('MapVoteWon', 'SaveStatisticsOnShutdown', function() STATS:UpdateStatis
 hook.Add('GameEnd', 'SaveStatisticsOnShutdown', function() STATS:UpdateStatistics() end)
 
 -- Update statistics for disconnecting players
+--[[
 hook.Add('PlayerDisconnected', 'SaveStatisticsOnDisconnect', function(ply)
     if ply:IsBot() then return end
     if not ply:SteamID64() then return end
 
     hook.Call('UpdateStatistics', nil, v)
 end)
+]]--
 
 -- Load component modules
 include('stats_playtime.lua')
