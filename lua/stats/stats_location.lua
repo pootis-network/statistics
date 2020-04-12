@@ -50,7 +50,7 @@ function STATS:StoreVisit(ply)
     -- Strip port
     local idx = string.find(ip, ':')
     if idx then
-        ip = string.sub(ip, 1,  - 1)
+        ip = string.sub(ip, 1, idx - 1)
     end
 
     local current_date = os.date('%Y-%m-%d', os.time())
