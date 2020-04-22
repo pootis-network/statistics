@@ -64,7 +64,7 @@ hook.Add('UpdateStatistics', 'UpdatePlaytimeStatistics', function(ply) STATS:Upd
 
 -- Maestro role management based on playtime
 hook.Add('StatisticsFetchedPlaytime', 'PlaytimeMaestroRoles', function(ply, playtime)
-    if not masetro then return end
+    if not maestro then return end
     local group = ply:GetUserGroup() or nil
     if not group then return end
 
