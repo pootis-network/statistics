@@ -169,7 +169,7 @@ config_functions['G'] = function(frame, c)
     end
     c.Presets:SetText('Load a preset...')
     function c.Presets:OnSelect(index, v)
-        local data = gradient_presets[v]
+        local data = table.Copy(gradient_presets[v])
 
         c.mixer1:SetColor(Color(data[1], data[2], data[3]))
         c.mixer2:SetColor(Color(data[4], data[5], data[6]))
@@ -286,7 +286,7 @@ config_functions['M'] = function(frame, c)
     c.Presets:SetText('Load a preset...')
     function c.Presets:OnSelect(index, v)
         -- Load data
-        local data = multi_gradient_presets[v]
+        local data = table.Copy(multi_gradient_presets[v])
         frame.NameTable = data
         c:UpdateMPickers()
 
