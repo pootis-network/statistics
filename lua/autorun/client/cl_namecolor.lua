@@ -50,9 +50,7 @@ name_color_funcs['M'] = function(name, cd)
                 -- Use the sth stop of the gradient
                 local stop = (i-1)*3
                 local sn = (size - (s - n))/size
-
-                print(cd, stop, size, sn)
-
+                
                 local r = cd[stop+1] + (cd[stop+4] - cd[stop+1]) * sn
                 local g = cd[stop+2] + (cd[stop+5] - cd[stop+2]) * sn
                 local b = cd[stop+3] + (cd[stop+6] - cd[stop+3]) * sn
@@ -153,10 +151,12 @@ local gradient_presets = {
     ['Sublime Vivid'] = {252, 70, 107, 63, 94, 251},
     ['Ibiza Sunset'] = {238, 9, 121, 255, 106, 0},
     ['Coconut Ice'] = {192, 192, 170, 28, 239, 255},
-    ['Azure Pop'] = {},
-    ['Deep Sea Space'] = {},
-    ['Bluebird'] = {},
-    ['Lemon Twist'] = {},
+    ['Azure Pop'] = {239, 50, 217, 137, 255, 253},
+    ['Deep Sea Space'] = {44, 62, 80, 76, 161, 175},
+    ['Bluebird'] = {0, 198, 255, 0, 114, 255},
+    ['Lemon Twist'] = {60, 165, 92, 181, 172, 73},
+    ['Titanium'] = {40, 48, 72, 133, 147, 152},
+    ['Rose Water'] = {229, 93, 135, 95, 195, 228}
 }
 
 -- Config panel functions for the name color UI
@@ -362,7 +362,6 @@ local function OpenNameCustomizer()
         if config_functions[mode] then
             config:Clear()
             frame.NameTable = config_defaults[mode]
-            PrintTable(frame.NameTable)
             config_functions[mode](frame, config)
         end
     end
