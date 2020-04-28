@@ -467,7 +467,6 @@ update_functions['M'] = function(frame, c)
 
     -- Blank presets if any changes are made
     c.Presets:SetText('Load a preset...')
-    print('Finished update')
 end
 
 local function OpenNameCustomizer()
