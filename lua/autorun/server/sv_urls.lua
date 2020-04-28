@@ -51,7 +51,6 @@ local chat_commands = {
 
 hook.Add('PlayerSay', 'StatisticsChatCommands', function(ply, txt)
     local message = string.lower(txt)
-    print(message)
     if chat_commands[message] then
         chat_commands[message](ply)
     end
