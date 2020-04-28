@@ -50,7 +50,7 @@ name_color_funcs['M'] = function(name, cd)
                 -- Use the sth stop of the gradient
                 local stop = (i-1)*3
                 local sn = (size - (s - n))/size
-                
+
                 local r = cd[stop+1] + (cd[stop+4] - cd[stop+1]) * sn
                 local g = cd[stop+2] + (cd[stop+5] - cd[stop+2]) * sn
                 local b = cd[stop+3] + (cd[stop+6] - cd[stop+3]) * sn
@@ -159,6 +159,15 @@ local gradient_presets = {
     ['Rose Water'] = {229, 93, 135, 95, 195, 228}
 }
 
+-- Adv. gradient presets
+local multi_gradient_presets = {
+    ['Argon'] = {3, 0, 30, 115, 3, 192, 236, 56, 188, 253, 239, 249},
+    ['Tutankhamun'] = {26, 42, 108, 178, 31, 31, 253, 187, 45},
+    ['Pacific Breeze'] = {0, 65, 106, 121, 159, 12, 225, 224, 0},
+    ['Lunada'] = {84, 51, 255, 32, 189, 255, 165, 254, 203},
+    ['Neon Artist'] = {18, 194, 233, 196, 113, 237, 246, 79, 89}
+}
+
 -- Config panel functions for the name color UI
 -- These create all the relevant settings for the config panel
 local config_functions = {}
@@ -190,7 +199,6 @@ config_functions['G'] = function(frame, c)
         frame:TriggerUpdate()
         self:SetText(v)
     end
-
     yy = yy + 24 + 32
 
     local mixer1_label = vgui.Create('DLabel', c)
@@ -279,13 +287,43 @@ config_functions['H'] = function(frame, c)
 end
 
 config_functions['M'] = function(frame, c)
-    -- todo, sorry
+    -- oh boy
+    local yy = 0
+    local w = c:GetWide()
+    local size = math.floor(#frame.NameTable/3)
+    print(size)
+
+    local presets_label = vgui.Create('DLabel', c)
+    presets_label:SetSize(128, 24)
+    presets_label:SetPos(12, yy)
+    presets_label:SetText('')
+    function presets_label:Paint(w, h)
+        drawShadowText('Presets', 'DonorUI_24', 0, 0, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    end
+    yy = yy + 24
+
+    c.Presets = vgui.Create('DComboBox', c)
+    c.Presets:SetSize(w - 24, 32)
+    c.Presets:SetPos(12, yy)
+    for k, v in pairs(multi_gradient_presets) do
+        c.Presets:AddChoice(k)
+    end
+    c.Presets:SetText('Load a preset...')
+    function c.Presets:OnSelect(index, v)
+        local data = multi_gradient_presets[v]
+        frame.NameTable = data
+        
+        frame:TriggerUpdate()
+        self:SetText(v)
+    end
+    yy = yy + 24 + 32
 end
 
 -- Defaults
 local config_defaults = {
     ['G'] = {213, 51, 105, 203, 173, 109},
-    ['H'] = {0, 360}
+    ['H'] = {0, 360},
+    ['M'] = {84, 51, 255, 32, 189, 255, 165, 254, 203}
 }
 
 local function OpenNameCustomizer()
@@ -349,9 +387,14 @@ local function OpenNameCustomizer()
     mode_dropdown:SetPos(12, 72)
     mode_dropdown:AddChoice('[G] Gradient')
 
-    if amount >= 1000 then
+    -- $10 donors or staff members get Hue access
+    if (amount >= 1000 or LocalPlayer():IsAdmin()) then
         mode_dropdown:AddChoice('[H] Hue Rainbow')
-        -- mode_dropdown:AddChoice('[M] Multicolor')
+    end
+
+    -- $20 donors or admin get Multicolor access
+    if(amount >= 2000 or LocalPlayer():IsSuperAdmin()) then
+        mode_dropdown:AddChoice('[M] Multicolor')
     end
 
     function mode_dropdown:OnSelect(index, value)

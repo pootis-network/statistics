@@ -22,8 +22,10 @@ function STATS:GetDonorStatus(ply)
     q:start()
 end
 
-function STATS:UpdateDonorStatus(ply, tbl)
+function STATS:UpdateDonorStatus(ply, tbl, force)
     -- Validate the name color table to ensure that nobody does sketchy stuff
+    local amount = ply:GetNWInt('DonorAmount', 0)
+
     local mode = tbl[1]
     local namestring = nil
     if mode == 'G' then
@@ -32,19 +34,19 @@ function STATS:UpdateDonorStatus(ply, tbl)
             tbl[i] = math.Clamp(tbl[i], 0, 255)
         end
 
-    elseif mode == 'H' then
+    elseif mode == 'H' and (amount > 1000 or ply:IsAdmin() or force) then
         if #tbl != 3 then return end
         tbl[2] = math.Clamp(tbl[2], 0, 360)
         tbl[3] = math.Clamp(tbl[3], 0, 720)
 
-    elseif mode == 'M' then
-        if #tbl != math.floor((#tbl-1)/3) then return end
+    elseif mode == 'M' and (amount > 2000 or ply:IsSuperAdmin() or force) then
+        if #tbl > 13 or (#tbl-1)%3 != 0 or #tbl < 10 then return end
+
         for i=2,#tbl do
             tbl[i] = math.Clamp(tbl[i], 0, 255)
         end
-
     else
-        -- Invalid mode
+        -- Invalid mode (or not correct permissions)
         return
     end
 
