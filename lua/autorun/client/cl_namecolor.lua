@@ -286,11 +286,20 @@ config_functions['M'] = function(frame, c)
     c.Presets:SetText('Load a preset...')
     function c.Presets:OnSelect(index, v)
         -- Load data
-        local data = table.Copy(multi_gradient_presets[v])
-        frame.NameTable = data
+        local data = multi_gradient_presets[v]
+        local size = math.floor(#data/3)
+        frame.NameTable = table.Copy(data)
         c:UpdateMPickers()
 
-        -- Force update
+        -- Update color pickers
+        for k,v in pairs(c.colors) do
+            if k > size then break end
+
+            local s = (k-1)*3
+            v:SetColor(Color(data[s+1], data[s+2], data[s+3]))
+        end
+
+        frame.NameTable = table.Copy(data)
         frame:TriggerUpdate()
         self:SetText(v)
     end
@@ -458,6 +467,7 @@ update_functions['M'] = function(frame, c)
 
     -- Blank presets if any changes are made
     c.Presets:SetText('Load a preset...')
+    print('Finished update')
 end
 
 local function OpenNameCustomizer()
