@@ -554,7 +554,7 @@ local function OpenNameCustomizer()
     end
 
     local preview_panel = vgui.Create('DPanel', frame)
-    preview_panel:SetSize(400 - 24 - 64 - 12, 48)
+    preview_panel:SetSize(300, 48)
     preview_panel:SetPos(12, 540)
     function preview_panel:Paint(w, h)
         draw.RoundedBox(8, 0, 0, w, h, Color(245, 246, 250))
@@ -568,13 +568,22 @@ local function OpenNameCustomizer()
         end
         if not tbl then return end
 
-        surface.SetFont('DonorUI_32')
+        -- Choose a smaller font if names are too long
+        local font = 'DonorUI_32'
+        surface.SetFont(font)
         local width, height = surface.GetTextSize(name)
+        if width > 288 then
+            font = 'DonorUI_24'
+            surface.SetFont(font)
+            width, height = surface.GetTextSize(name)
+        end
+
+        -- Render the name same as chat would
         local xx = (w/2) - (width/2)
         local current_c = color_white
         for k,v in pairs(tbl) do
             if type(v) == 'string' then
-                local cw = draw.SimpleText(v, 'DonorUI_32', xx, h/2, current_c, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+                local cw = draw.SimpleText(v, font, xx, h/2, current_c, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
                 xx = xx + cw
             elseif type(v) == 'table' and v.r then
                 current_c = v
