@@ -89,6 +89,8 @@ function chat.AddText(...)
                 else
                     new = {name}
                 end
+            else
+                continue
             end
 
             -- Add a white 'buffer' at the end of each name
