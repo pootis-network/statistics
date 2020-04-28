@@ -494,8 +494,7 @@ local function OpenNameCustomizer()
         drawShadowText('Name Color Customizer', 'DonorUI_24', w/2, head_h/2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
 
-    local amount = LocalPlayer():GetNWInt('DonorAmount')
-
+    local amount = LocalPlayer():GetNWInt('DonorAmount', 0)
     if amount < 500 then
         local donor_label = vgui.Create('DLabel', frame)
         donor_label:SetText('You need to be a donor to use this!')

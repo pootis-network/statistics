@@ -34,12 +34,12 @@ function STATS:UpdateDonorStatus(ply, tbl, force)
             tbl[i] = math.Clamp(tbl[i], 0, 255)
         end
 
-    elseif mode == 'H' and (amount > 1000 or ply:IsAdmin() or force) then
+    elseif mode == 'H' and (amount >= 1000 or ply:IsAdmin() or force) then
         if #tbl != 3 then return end
         tbl[2] = math.Clamp(tbl[2], 0, 360)
         tbl[3] = math.Clamp(tbl[3], 0, 720)
 
-    elseif mode == 'M' and (amount > 2000 or ply:IsSuperAdmin() or force) then
+    elseif mode == 'M' and (amount >= 2000 or ply:IsSuperAdmin() or force) then
         if #tbl > 19 or (#tbl-1)%3 != 0 or #tbl < 10 then return end
 
         for i=2,#tbl do
