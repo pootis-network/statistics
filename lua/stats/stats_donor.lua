@@ -48,7 +48,9 @@ function STATS:UpdateDonorStatus(ply, tbl)
         return
     end
 
+    -- Convert to a string
     namestring = table.concat(tbl, ',')
+    namestring = namestring[1] .. string.sub(namestring, 3)
     if not namestring then return end
     ply:SetNWString('NameColor', namestring)
 
@@ -58,8 +60,9 @@ function STATS:UpdateDonorStatus(ply, tbl)
     -- Update the database
     local q = STATS.Queries['donor_update']
     q:setString(1, namestring)
-    q:setString(2, namestring)
+    q:setString(2, id)
     q:start()
+    return true
 end
 
 hook.Add('PlayerInitialSpawn', 'LoadDonorStatistics', function(ply)
@@ -73,5 +76,11 @@ net.Receive('UpdateNameColor', function(len, ply)
     end
 
     local details = net.ReadTable()
-    STATS:UpdateDonorStatus(ply, details)
+    local success = STATS:UpdateDonorStatus(ply, details)
+    if success then
+        ply:ChatPrint('Your name color has been updated.')
+    else
+        ply:ChatPrint('Something went wrong when updating your name :(')
+        ply:ChatPrint('If this issue persists, contact an Administrator')
+    end
 end)
