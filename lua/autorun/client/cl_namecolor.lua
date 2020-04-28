@@ -122,29 +122,6 @@ local function drawShadowText(text, font, x, y, color, horizontal_align, vertica
 	return draw.SimpleText(text, font, x, y, color, horizontal_align, vertical_align) -- Regular text
 end
 
--- Update functions for the name color UI
-local update_functions = {}
-update_functions['G'] = function(frame, c)
-    local c1 = c.mixer1:GetColor()
-    local c2 = c.mixer2:GetColor()
-
-    frame.NameTable = {c1.r, c1.g, c1.b, c2.r, c2.g, c2.b}
-
-    -- Blank presets if any changes are made
-    c.Presets:SetText('Load a preset...')
-end
-
-update_functions['H'] = function(frame, c)
-    h1 = math.Clamp(c.slider1:GetValue(), 0, 360)
-    h2 = math.Clamp(c.slider2:GetValue(), 0, 720)
-
-    frame.NameTable = {h1, h2}
-end
-
-update_functions['M'] = function(frame, c)
-    -- todo, sorry
-end
-
 -- Gradient presets
 local gradient_presets = {
     ['Blurry Beach'] = {213, 51, 105, 203, 173, 109},
@@ -290,8 +267,6 @@ config_functions['M'] = function(frame, c)
     -- oh boy
     local yy = 0
     local w = c:GetWide()
-    local size = math.floor(#frame.NameTable/3)
-    print(size)
 
     local presets_label = vgui.Create('DLabel', c)
     presets_label:SetSize(128, 24)
@@ -310,13 +285,134 @@ config_functions['M'] = function(frame, c)
     end
     c.Presets:SetText('Load a preset...')
     function c.Presets:OnSelect(index, v)
+        -- Load data
         local data = multi_gradient_presets[v]
         frame.NameTable = data
-        
+        c:UpdateMPickers()
+
+        -- Force update
         frame:TriggerUpdate()
         self:SetText(v)
     end
-    yy = yy + 24 + 32
+
+    c.colors = {}
+    function c:UpdateMPickers()
+        local xx = 12
+        local yy = 60
+        local size = math.floor(#frame.NameTable/3)
+        if size < 3 or size > 6 then return end
+
+        -- Remove any invalid panels
+        for k,v in pairs(c.colors) do
+            if not IsValid(v) then continue end
+
+            if v:GetClassName() == 'Label' then
+                v:Remove()
+            elseif k > size then
+                if v.label then v.label:Remove() end
+                if v.remove then v.remove:Remove() end
+                v:Remove()
+            elseif k < size then
+                if v.remove then
+                    v.remove:Remove()
+                end
+            end
+        end
+        
+        -- Recreate anything else we need
+        for i=1,math.min(6, size+1) do
+            if i == (size+1) then
+                -- Add buttons to add an additional colour
+                local button = vgui.Create('DButton', c)
+                button:SetSize(160, 80)
+                button:SetPos(xx, yy + 24)
+                button:SetText('')
+                function button:Paint(w, h)
+                    local c = Color(0, 168, 255)
+                    if self:IsHovered() then
+                        c = Color(0, 151, 230)
+                    end
+
+                    draw.RoundedBox(8, 0, 0, w, h, c)
+                    drawShadowText('Add', 'DonorUI_32', w/2, h/2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                end
+
+                function button:DoClick()
+                    local new = HSVToColor(math.random(0, 360), 1, 1)
+                    table.insert(frame.NameTable, new.r)
+                    table.insert(frame.NameTable, new.g)
+                    table.insert(frame.NameTable, new.b)
+                    frame:TriggerUpdate()
+                end
+
+                c.colors[i] = button
+            elseif not IsValid(c.colors[i]) then
+                -- Add a color picker
+                local label = vgui.Create('DLabel', c)
+                label:SetSize(128, 24)
+                label:SetPos(xx, yy)
+                label:SetText('')
+                function label:Paint(w, h)
+                    drawShadowText('Color ' .. i, 'DonorUI_24', 0, 0, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+                end
+
+                local mixer = vgui.Create('DColorMixer', c)
+                mixer:SetPalette(false)
+                mixer:SetAlphaBar(false)
+                mixer:SetColor(Color(255, 255, 255))
+                mixer:SetSize(160, 72)
+                mixer:SetPos(xx, yy + 24)
+
+                -- Change the color
+                local s = (i-1)*3
+                mixer:SetColor(Color(frame.NameTable[s+1], frame.NameTable[s+2], frame.NameTable[s+3]))
+
+                function mixer:ValueChanged()
+                    frame:TriggerUpdate()
+                end
+                c.colors[i] = mixer
+                c.colors[i].label = label
+            end
+
+            -- Add a removal button if needed
+            if i == size and size > 3 and IsValid(c.colors[size]) and not IsValid(c.colors[size].remove) then
+                local remove = vgui.Create('DButton', c)
+                remove:SetSize(20, 20)
+                remove:SetPos(xx + 136, yy + 2)
+                remove:SetText('')
+                function remove:Paint(w, h)
+                    local c = Color(0, 168, 255)
+                    if self:IsHovered() then
+                        c = Color(0, 151, 230)
+                    end
+
+                    draw.RoundedBox(8, 0, 0, w, h, c)
+                    drawShadowText('x', 'DonorUI_24', w/2, h/2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                end
+
+                function remove:DoClick()
+                    -- Remove the last 3 values from the table, forcing a resize
+                    table.remove(frame.NameTable)
+                    table.remove(frame.NameTable)
+                    table.remove(frame.NameTable)
+                    frame:TriggerUpdate()
+                end
+
+                c.colors[size].remove = remove
+            end
+
+            -- Adjust positioning
+            if xx == 12 then 
+                xx = 228
+            else
+                xx = 12
+                yy = yy + 108
+            end
+        end
+    end
+
+    -- Build the pickers
+    c:UpdateMPickers()
 end
 
 -- Defaults
@@ -325,6 +421,44 @@ local config_defaults = {
     ['H'] = {0, 360},
     ['M'] = {84, 51, 255, 32, 189, 255, 165, 254, 203}
 }
+
+-- Update functions for the name color UI
+local update_functions = {}
+update_functions['G'] = function(frame, c)
+    local c1 = c.mixer1:GetColor()
+    local c2 = c.mixer2:GetColor()
+
+    frame.NameTable = {c1.r, c1.g, c1.b, c2.r, c2.g, c2.b}
+
+    -- Blank presets if any changes are made
+    c.Presets:SetText('Load a preset...')
+end
+
+update_functions['H'] = function(frame, c)
+    h1 = math.Clamp(c.slider1:GetValue(), 0, 360)
+    h2 = math.Clamp(c.slider2:GetValue(), 0, 720)
+
+    frame.NameTable = {h1, h2}
+end
+
+update_functions['M'] = function(frame, c)
+    local size = math.floor(#frame.NameTable/3)
+    for i=1,size do
+        if not IsValid(c.colors[i]) then continue end
+
+        local s = (i-1)*3
+        local c = c.colors[i]:GetColor()
+        frame.NameTable[s+1] = c.r
+        frame.NameTable[s+2] = c.g
+        frame.NameTable[s+3] = c.b
+    end
+
+    -- Update the configuration pickers
+    c:UpdateMPickers()
+
+    -- Blank presets if any changes are made
+    c.Presets:SetText('Load a preset...')
+end
 
 local function OpenNameCustomizer()
     local namestring = LocalPlayer():GetNWString('NameColor', 'G213,51,105,203,173,109')
@@ -364,7 +498,7 @@ local function OpenNameCustomizer()
     end
 
     local config = vgui.Create('DPanel', frame)
-    config:SetSize(400, 356)
+    config:SetSize(400, 388)
     config:SetPos(0, 128)
     function config:Paint() end
 
