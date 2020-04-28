@@ -35,7 +35,7 @@ function STATS:UpdateDonorStatus(ply, tbl)
     elseif mode == 'H' then
         if #tbl != 3 then return end
         tbl[2] = math.Clamp(tbl[2], 0, 360)
-        tbl[3] = math.Clamp(tbl[3], 0, 360)
+        tbl[3] = math.Clamp(tbl[3], 0, 720)
 
     elseif mode == 'M' then
         if #tbl != math.floor((#tbl-1)/3) then return end

@@ -137,17 +137,26 @@ update_functions['G'] = function(frame, c)
 end
 
 update_functions['H'] = function(frame, c)
+    h1 = math.Clamp(c.slider1:GetValue(), 0, 360)
+    h2 = math.Clamp(c.slider2:GetValue(), 0, 720)
 
+    frame.NameTable = {h1, h2}
 end
 
 update_functions['M'] = function(frame, c)
-
+    -- todo, sorry
 end
 
 -- Gradient presets
 local gradient_presets = {
     ['Blurry Beach'] = {213, 51, 105, 203, 173, 109},
-    ['Sublime Vivid'] = {252, 70, 107, 63, 94, 251}
+    ['Sublime Vivid'] = {252, 70, 107, 63, 94, 251},
+    ['Ibiza Sunset'] = {238, 9, 121, 255, 106, 0},
+    ['Coconut Ice'] = {192, 192, 170, 28, 239, 255},
+    ['Azure Pop'] = {},
+    ['Deep Sea Space'] = {},
+    ['Bluebird'] = {},
+    ['Lemon Twist'] = {},
 }
 
 -- Config panel functions for the name color UI
@@ -184,6 +193,23 @@ config_functions['G'] = function(frame, c)
 
     yy = yy + 24 + 32
 
+    local mixer1_label = vgui.Create('DLabel', c)
+    mixer1_label:SetSize(128, 24)
+    mixer1_label:SetPos(12, yy)
+    mixer1_label:SetText('')
+    function mixer1_label:Paint(w, h)
+        drawShadowText('Start Color', 'DonorUI_24', 0, 0, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    end
+
+    local mixer2_label = vgui.Create('DLabel', c)
+    mixer2_label:SetSize(128, 24)
+    mixer2_label:SetPos(228, yy)
+    mixer2_label:SetText('')
+    function mixer2_label:Paint(w, h)
+        drawShadowText('End Color', 'DonorUI_24', 0, 0, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    end
+    yy = yy + 24
+
     -- Color 1
     c.mixer1 = vgui.Create('DColorMixer', c)
     c.mixer1:SetPalette(false)
@@ -204,15 +230,63 @@ config_functions['G'] = function(frame, c)
     function c.mixer2:ValueChanged()
         frame:TriggerUpdate()
     end
+
+    -- Load data from existing color if needed
+    local c1 = Color(frame.NameTable[1], frame.NameTable[2], frame.NameTable[3])
+    local c2 = Color(frame.NameTable[4], frame.NameTable[5], frame.NameTable[6])
+    c.mixer1:SetColor(c1)
+    c.mixer2:SetColor(c2)
+    frame:TriggerUpdate()
 end
 
 config_functions['H'] = function(frame, c)
+    local yy = 0
+    local w = c:GetWide()
 
+    c.slider1 = vgui.Create('DNumSlider', c)
+    c.slider1:SetSize(w - 24, 32)
+    c.slider1:SetPos(12, yy)
+    c.slider1:SetMin(0)
+    c.slider1:SetMax(360)
+    c.slider1:SetDecimals(0)
+    function c.slider1.Label:Paint(w, h)
+        drawShadowText('Start Hue', 'DonorUI_24', w - 24, h/2, color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+    end
+    function c.slider1:OnValueChanged()
+        frame:TriggerUpdate()
+    end
+    yy = yy + 32
+
+    c.slider2 = vgui.Create('DNumSlider', c)
+    c.slider2:SetSize(w - 24, 32)
+    c.slider2:SetPos(12, yy)
+    c.slider2:SetMin(0)
+    c.slider2:SetMax(720)
+    c.slider2:SetDecimals(0)
+    function c.slider2.Label:Paint(w, h)
+        drawShadowText('End Hue', 'DonorUI_24', w - 24, h/2, color_white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+    end
+    function c.slider2:OnValueChanged()
+        frame:TriggerUpdate()
+    end
+
+    -- Load data from existing color if needed
+    local h1 = frame.NameTable[1]
+    local h2 = frame.NameTable[2]
+    c.slider1:SetValue(h1)
+    c.slider2:SetValue(h2)
+    frame:TriggerUpdate()
 end
 
 config_functions['M'] = function(frame, c)
-
+    -- todo, sorry
 end
+
+-- Defaults
+local config_defaults = {
+    ['G'] = {213, 51, 105, 203, 173, 109},
+    ['H'] = {0, 360}
+}
 
 local function OpenNameCustomizer()
     local namestring = LocalPlayer():GetNWString('NameColor', 'G213,51,105,203,173,109')
@@ -257,8 +331,8 @@ local function OpenNameCustomizer()
     function config:Paint() end
 
     function frame:TriggerUpdate()
-        if update_functions[mode] then
-            update_functions[mode](frame, config)
+        if update_functions[frame.Mode] then
+            update_functions[frame.Mode](frame, config)
         end
     end
 
@@ -275,9 +349,9 @@ local function OpenNameCustomizer()
     mode_dropdown:SetPos(12, 72)
     mode_dropdown:AddChoice('[G] Gradient')
 
-    if amount > 10000 then
+    if amount >= 1000 then
         mode_dropdown:AddChoice('[H] Hue Rainbow')
-        mode_dropdown:AddChoice('[M] Multicolor')
+        -- mode_dropdown:AddChoice('[M] Multicolor')
     end
 
     function mode_dropdown:OnSelect(index, value)
@@ -287,6 +361,8 @@ local function OpenNameCustomizer()
 
         if config_functions[mode] then
             config:Clear()
+            frame.NameTable = config_defaults[mode]
+            PrintTable(frame.NameTable)
             config_functions[mode](frame, config)
         end
     end
@@ -301,8 +377,8 @@ local function OpenNameCustomizer()
     function preview_panel:PaintOver(w, h)
         local tbl = nil
         -- Handle name with name color func   
-        if name_color_funcs[mode] then
-            tbl = name_color_funcs[mode](name, frame.NameTable)
+        if name_color_funcs[frame.Mode] then
+            tbl = name_color_funcs[frame.Mode](name, frame.NameTable)
         end
         if not tbl then return end
 
