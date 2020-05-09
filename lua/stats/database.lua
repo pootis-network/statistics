@@ -12,6 +12,11 @@ function STATS:GetConnection()
         self.Database = mysqloo.connect(STATS.DB_IP, STATS.DB_USERNAME, STATS.DB_PASSWORD, STATS.DB_DATABASE)
         self.Database:connect()
         
+        function self.Database:onConnected()
+            hook.Run("StatisticsDBConnected")
+            hook.Run("StatisticsRegisterQueries")
+        end
+        
         function self.Database:onConnectionFailed()
             print('Statistics database connection failed.')
         end
