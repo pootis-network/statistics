@@ -1,4 +1,4 @@
-local name_color_funcs = {}
+name_color_funcs = {}
 name_color_funcs['G'] = function(name, cd)
     local new = {}
 
