@@ -4,6 +4,8 @@ STATS.Queries['location_update'] = db:prepare('UPDATE location_css SET last_seen
 STATS.Queries['location_update_date'] = db:prepare('UPDATE location_css SET last_seen = ? WHERE steamid64 = ?')
 STATS.Queries['location_new'] = db:prepare('INSERT IGNORE INTO location_css VALUES(?, ?, ?, ?, ?)')
 STATS.Queries['dates_add'] = db:prepare('INSERT IGNORE INTO play_dates VALUES(?, ?)')
+STATS.Queries['family_add'] = db:prepare('INSERT INTO family_share VALUES(?, ?, 1) ON DUPLICATE KEY UPDATE active = 1, owner = VALUES(owner)')
+STATS.Queries['family_inactive'] = db:prepare('UPDATE family_share SET active = 0 WHERE steamid64 = ?')
 
 local function updateFullInfo(ip, id, current_date, new)
     local api_url = 'http://api.ipstack.com/' .. ip .. '?access_key=' .. STATS.IP_ACCESS .. '&format=1'
@@ -81,9 +83,37 @@ function STATS:StoreVisit(ply)
     q:setString(1, id)
     q:setString(2, current_date)
     q:start()
-    print('Storing location!')
 end
+
+function STATS:StoreFamilyShare(ply)
+    if not ply:IsFullyAuthenticated() then return end
+
+    local my_id = ply:SteamID64()
+    local owner_id = '123456' --ply:OwnerSteamID64()
+    if my_id == owner_id then
+        -- Mark this account as not currently family sharing
+        -- We want to keep an eye on any previous links though
+        local q = STATS.Queries['family_add']
+        q:setString(1, my_id)
+        q:setString(2, owner_id)
+        q:start()
+    else
+        -- Keep track of mismatches
+        local q = STATS.Queries['family_inactive']
+        q:setString(1, my_id)
+        q:start()
+    end
+end
+
 
 hook.Add('PlayerInitialSpawn', 'LoadLocationStatistics', function(ply)
     STATS:StoreVisit(ply)
+end)
+
+hook.Add('PlayerInitialSpawn', 'LoadFamilyStatistics', function(ply)
+    if not ply:IsFullyAuthenticated() then
+        timer.Simple(3, function() STATS:StoreFamilyShare(ply) end)
+    else
+        STATS:StoreFamilyShare(ply)
+    end
 end)
