@@ -14,10 +14,10 @@ local function updateFullInfo(ip, id, current_date, new)
 
         -- Handle database
         if new then
-            local q = STATS.Queries['location_update']
+            local q = STATS.Queries['location_new']
             q:setString(1, id)
-            q:setString(2, current_date)
-            q:setString(3, ip)
+            q:setString(2, ip)
+            q:setString(3, current_date)
             q:setString(4, country)
             q:setString(5, region)
             q:start()
