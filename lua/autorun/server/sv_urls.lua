@@ -55,3 +55,8 @@ hook.Add('PlayerSay', 'StatisticsChatCommands', function(ply, txt)
         chat_commands[message](ply)
     end
 end)
+
+hook.Add('PlayerSay', 'StopSpaceSpam',  function(ply, text)
+    local clean = string.TrimRight(text)
+    if clean == "" then return false end
+end)
