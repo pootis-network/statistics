@@ -1,59 +1,88 @@
 local db = STATS.Database
-STATS.Queries['username_update'] = db:prepare('UPDATE playtime SET username = ? WHERE steamid64 = ?')
-STATS.Queries['playtime_get'] = db:prepare('SELECT * FROM playtime WHERE steamid64 = ?')
-STATS.Queries['playtime_new'] = db:prepare('INSERT IGNORE INTO playtime VALUES(?, 0, ?)')
-STATS.Queries['playtime_update'] = db:prepare('UPDATE playtime SET playtime = ? WHERE steamid64 = ? AND playtime < ?')
+STATS.Queries['username_update2'] = db:prepare('INSERT INTO known_usernames VALUES(?, ?) ON DUPLICATE KEY UPDATE username = VALUES(username)')
+STATS.Queries['playtime_get2'] = db:prepare('SELECT playtime FROM playtime_new WHERE steamid64 = ? AND gamemode = ?')
+STATS.Queries['playtime_new2'] = db:prepare('INSERT IGNORE INTO playtime_new VALUES(?, ?, 0)')
+STATS.Queries['playtime_update2'] = db:prepare('UPDATE playtime_new SET playtime = ? WHERE steamid64 = ? AND gamemode = ? AND playtime < ?')
 
+-- Get the gamemode name
+-- This has an extra check for Minigames
+function STATS:GetGamemodeName()
+    if GAMEMODE.IsMinigames then
+        return "minigames"
+    else
+        return GAMEMODE_NAME
+    end
+end
+
+-- Fetch playtime get initial playtime
 function STATS:GetInitialPlaytime(ply)
     if not IsValid(ply) then return end
     if ply:IsBot() then return end
+
     local id = ply:SteamID64()
     if not id then return end
 
-    if not ply.JoinTime then ply.JoinTime = os.time() end
+    -- Store the join time
+    if not ply.Jointime then ply.Jointime = os.time() end
     if ply.Playtime then return end
 
-    local q1 = STATS.Queries['playtime_get']
-    q1:setString(1, id)
-    function q1:onSuccess(data)
+    local get_query = STATS.Queries['playtime_get2']
+    get_query:setString(1, id)
+    get_query:setString(2, STATS:GetGamemodeName())
+    function get_query:onSuccess(data)
         if type(data) == 'table' and #data > 0 then
+            -- Load the existing playtime value
             ply.Playtime = data[1].playtime
-            
-            local q2 = STATS.Queries['username_update']
-            q2:setString(1, ply:Nick() or '?')
-            q2:setString(2, id)
-            q2:start()
 
-            timer.Simple(2, function()
+            timer.Simple(1, function()
                 hook.Call('StatisticsFetchedPlaytime', nil, ply, data[1].playtime)
             end)
         else
-            local q2 = STATS.Queries['playtime_new']
-            q2:setString(1, id)
-            q2:setString(2, ply:Nick() or '?')
-            q2:start()
+            -- No playtime record currently exists for this gamemode
+            -- Insert 0 playtime
+            local new_query = STATS.Queries['playtime_new2']
+            new_query:setString(1, id)
+            new_query:setString(2, STATS:GetGamemodeName())
+            new_query:start()
         end
     end
-    q1:start()
+    get_query:start()
 end
 
+-- Store the players current username into the table
+function STATS:UpdateUsername(ply)
+    if not IsValid(ply) then return end
+    if ply:IsBot() then return end
+
+    local id = ply:SteamID64()
+    if not id then return end
+
+    local name = ply:Nick()
+    if not name then return end
+
+    local name_query = STATS.Queries['username_update2']
+    name_query:setString(1, id)
+    name_query:setString(2, name)
+    name_query:start()
+end
+
+-- Update the playtime for this gamemode
 function STATS:UpdatePlaytime(ply)
     if not IsValid(ply) then return end
-    if !ply.JoinTime or !ply.Playtime then
+    if !ply.Jointime or !ply.Playtime then
         STATS:GetInitialPlaytime(ply)
         return
     end
 
-    local conntime = os.time() - ply.JoinTime
-    local newtime = ply.Playtime + conntime
+    local newtime = ply.Playtime + (os.time() - ply.JoinTime)
     local id = ply:SteamID64()
 
-    local q = STATS.Queries['playtime_update']
-    q:setNumber(1, newtime)
-    q:setString(2, id)
-    q:setNumber(3, newtime) -- ensure consistency
-
-    q:start()
+    local update_query = STATS.Queries['playtime_update2']
+    update_query:setNumber(1, newtime)
+    update_query:setString(2, id)
+    update_query:setString(3, STATS:GetGamemodeName())
+    update_query:setNumber(4, newtime) -- Ensure consistency
+    update_query:start()
 end
 
 hook.Add('PlayerInitialSpawn', 'LoadPlaytimeStatistics', function(ply)
