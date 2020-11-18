@@ -88,14 +88,15 @@ end
 hook.Add('PlayerInitialSpawn', 'LoadPlaytimeStatistics', function(ply)
     ply.JoinTime = os.time()
     STATS:GetInitialPlaytime(ply)
+    STATS:UpdateUsername(ply)
 end)
 hook.Add('UpdateStatistics', 'UpdatePlaytimeStatistics', function(ply) STATS:UpdatePlaytime(ply) end)
 
 -- Maestro role management based on playtime
 hook.Add('StatisticsFetchedPlaytime', 'PlaytimeMaestroRoles', function(ply, playtime)
     if GAMEMODE_NAME != 'murder' then return end
-
     if not maestro then return end
+    
     local group = ply:GetUserGroup() or nil
     if not group then return end
 
