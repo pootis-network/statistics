@@ -52,6 +52,8 @@ function STATS:SaveDarkRPStats(ply)
 end
 
 hook.Add('PlayerInitialSpawn', 'UpdateDarkRPStatistics', function(ply) STATS:FetchDarkRPStats(ply) end)
+
+--- TODO: fix this god damn function being nil (stats_main.lua complains when it is when saving data!)
 hook.Add('UpdateStatistics', 'UpdateDarkRPStatistics', function(ply) STATS:SaveDarkRPStats(ply) end)
 
 --- Track Death events.
