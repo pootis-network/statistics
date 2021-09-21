@@ -4,3 +4,77 @@
 --- Description: Dropzone Support for Statistics.
 --- DateTime: 9/20/2021 5:22 PM
 ---
+
+
+--- Praying that this shit doesnt fall apart like the DarkRP module did for saving.
+
+local db = STATS.Database
+STATS.Queries['drpz_get'] = db:prepare('SELECT * FROM stats_drpz WHERE steamid64 = ?')
+STATS.Queries['drpz_update'] = db:prepare('UPDATE stats_drpz SET wins = ?, kills = ?, deaths = ? WHERE steamid64 = ?')
+STATS.Queries['drpz_new'] = db:prepare('INSERT INTO stats_drpz VALUES (?, 0, 0, 0)')
+
+--- Data functions wrote, pray that was enough for the damn thing to work.
+function STATS:SaveDRPZStats(ply)
+    if not ply.DRPZStats then return end
+    local id = ply:SteamID64()
+
+    local q = STATS.Queries['drpz_update']
+    q:setNumber(1, ply.DarkRPStats['wins '])
+    q:setNumber(2, ply.DarkRPStats['kills'])
+    q:setNumber(3, ply.DarkRPStats['deaths'])
+    q:setString(4, id)
+    q:start()
+end
+function STATS:FetchDRPZStats(ply)
+    if ply:IsBot() then return end
+    local id = ply:SteamID64()
+    if not id then return end
+
+    ply.DarkRPStats = {}
+
+    local q = STATS.Queries['drpz_get']
+    q:setString(1, id)
+    function q:onSuccess(data)
+        if type(data) == 'table' and #data > 0 then
+            ply.DarkRPStats = data[1]
+        else
+            local q2 = STATS.Queries['drpz_new']
+            q2:setString(1, id)
+            q2:start()
+
+            ply.DarkRPStats = {
+                ['wins'] = ply:GetWins() or 0,
+                ['kills'] = 0,
+                ['deaths'] = 0
+            }
+        end
+    end
+    q:start()
+end
+
+
+--- now for dropzone specific shit.
+
+--- Handle Round End
+hook.Add("PostPlayerDeath","DRPZRoundCHK",function(ply)
+    --- we better be fucking able to hook into Dropzone, its  a good gamemode
+    --- i dont know if we should be using ModAlive, since it is a gamemode thing in the Shared Realm.
+    if GetGlobalInt("RoundStatus",0 ) == 1 then
+        local aliveplys = 0
+        local winner
+        for k,v in pairs(player.GetAll()) do
+            if v:ModAlive() == true then
+                aliveplys = aliveplys + 1
+                winner = v
+            end
+        end
+        --- somebody won, credit them.
+        if aliveplys == 1 then
+            --- dont credit bots.
+            if ply:IsBot() then return end
+
+            winner:SetWins(winner:GetWins()+1)
+            winner.DRPZStats['wins'] = winner.DRPZStats['wins'] + 1
+        end
+    end
+end)

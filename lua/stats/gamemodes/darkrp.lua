@@ -5,7 +5,7 @@
 --- DateTime: 9/20/2021 5:25 PM
 ---
 
---- TODO: figure out how to check money via a Hook for other things than pickup/drop money
+--- TODO: figure out how to check money via a Hook for other things than pickup/drop money (i dont think it is needed tho)
 
 local db = STATS.Database
 STATS.Queries['darkrp_get'] = db:prepare('SELECT * FROM stats_darkrp WHERE steamid64 = ?')
