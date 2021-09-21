@@ -6,17 +6,6 @@ STATS.UpdateTime = 120
 -- Include the database helper immediately
 include('database.lua')
 
-local supported_gamemodes = {
-    ["murder"] = true,
-    ["darkrp"] = true,
-}
--- Load gamemode-specific statistics managers
-hook.Add('Initialize', 'LoadGamemodeStatistics', function()
-    if supported_gamemodes[GAMEMODE_NAME] then
-        include('stats/gamemodes/' .. GAMEMODE_NAME .. '.lua')
-    end
-end)
-
 -- Update statistics hook handler
 function STATS:UpdateStatistics()
     for k,v in pairs(player.GetAll()) do
