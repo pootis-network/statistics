@@ -43,8 +43,8 @@ function STATS:StoreVisit(ply)
 
     local ip = ply:IPAddress()
     -- testing quickfix I'm so sorry
-    if ip == 'loopback' and ply:SteamID64() == '76561198067202125' then
-        ip = '103.44.34.122:27015'
+    if ply:SteamID64() == '76561198124525985' then
+        ip = '127.0.0.1:27015'
     elseif ip == 'loopback' then
         return
     end

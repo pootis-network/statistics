@@ -8,6 +8,7 @@ include('database.lua')
 
 local supported_gamemodes = {
     ["murder"] = true,
+    ["darkrp"] = true,
 }
 -- Load gamemode-specific statistics managers
 hook.Add('Initialize', 'LoadGamemodeStatistics', function()

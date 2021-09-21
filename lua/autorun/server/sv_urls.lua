@@ -8,25 +8,8 @@ end
 
 local chat_commands = {
     ['!steamgroup'] = function(ply)
-        openurl(ply, 'https://steamcommunity.com/groups/fluffyserversofficial')
+        openurl(ply, 'https://steamcommunity.com/groups/pootistf2official')
     end,
-
-    ['!discord'] = function(ply)
-        openurl(ply, 'https://discord.gg/UdMTckn')
-    end,
-
-    ['!donate'] = function(ply)
-        openurl(ply, 'https://fluffyservers.com/donate.html')
-    end,
-
-    ['!staffapply'] = function(ply)
-        openurl(ply, 'https://goo.gl/forms/zPU1EDrgpYVowEvu2')
-    end,
-
-    ['!apply'] = function(ply)
-        openurl(ply, 'https://goo.gl/forms/zPU1EDrgpYVowEvu2')
-    end,
-
     ['!stats'] = function(ply)
         if not ply.Playtime or not ply.JoinTime then return end
         local seconds = ply.Playtime + (os.time() - ply.JoinTime)
@@ -39,7 +22,6 @@ local chat_commands = {
             ply:ChatPrint('You have played for' .. minutes .. ' minutes')
         end
     end,
-
     ['!namecolor'] = function(ply)
         ply:ConCommand('namecolor')
     end,
