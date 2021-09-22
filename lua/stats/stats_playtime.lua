@@ -92,10 +92,12 @@ hook.Add('PlayerInitialSpawn', 'LoadPlaytimeStatistics', function(ply)
 end)
 hook.Add('UpdateStatistics', 'UpdatePlaytimeStatistics', function(ply) STATS:UpdatePlaytime(ply) end)
 
--- Maestro role management based on playtime
+-- ULX role management based on playtime
 hook.Add('StatisticsFetchedPlaytime', 'PlaytimeMaestroRoles', function(ply, playtime)
-    if GAMEMODE_NAME != 'murder' then return end
-    if not maestro then return end
+    -- no gamemode checks, only check for ULX and some sanity checks.
+    --if GAMEMODE_NAME != 'murder' then return end
+
+    if not ULib then return end
     
     local group = ply:GetUserGroup() or nil
     if not group then return end
@@ -106,21 +108,21 @@ hook.Add('StatisticsFetchedPlaytime', 'PlaytimeMaestroRoles', function(ply, play
         ply:ChatPrint('You have been promoted to Respected [1]')
         ply:ChatPrint('This rank has access to a couple of basic commands.')
         ply:ChatPrint('Type !menu to learn more.')
-        maestro.userrank( ply, 'respected' )
+        ply:SetUserGroup( 'respected' )
     elseif group == 'respected' and playtime >= 86400 then
         ply:ChatPrint('You have played for over a day!')
         ply:ChatPrint('You have been promoted to Respected [2]')
         ply:ChatPrint('If you were considering a staff application, being this rank will help immensely.')
-        maestro.userrank( ply, 'respected2' )
+        ply:SetUserGroup( 'respected2' )
     elseif group == 'respected2' and playtime >= 180000 then
         ply:ChatPrint('You have played for 50h.')
         ply:ChatPrint('You have been promoted to Respected [3]')
         ply:ChatPrint('This rank has access to !vote and !ghost')
-        maestro.userrank( ply, 'respected3' )
+        ply:SetUserGroup( 'respected3' )
     elseif group == 'respected3' and playtime >= 360000 then
-        ply:ChatPrint('Thankyou for your endless support of Fluffy Servers.')
+        ply:ChatPrint('Thankyou for your endless support of Pootis Network.')
         ply:ChatPrint('You have been promoted to Respected [4]')
         ply:ChatPrint('This is currently the final respected rank.')
-        maestro.userrank( ply, 'respected4' )
+        ply:SetUserGroup( 'respected4' )
     end
 end)

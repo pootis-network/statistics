@@ -112,7 +112,7 @@ end)
 
 hook.Add('PlayerInitialSpawn', 'LoadFamilyStatistics', function(ply)
     if not ply:IsFullyAuthenticated() then
-        timer.Simple(3, function() STATS:StoreFamilyShare(ply) end)
+        timer.Simple(5, function() STATS:StoreFamilyShare(ply) end)
     else
         STATS:StoreFamilyShare(ply)
     end
