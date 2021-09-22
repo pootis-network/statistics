@@ -131,7 +131,7 @@ hook.Add('StatisticsFetchedPlaytime', 'PlaytimeULXRoles', function(ply, playtime
         ply:ChatPrint('This rank has access to !vote and !ghost')
         ply:SetUserGroup( 'respected3' )
     elseif group == 'respected3' and playtime >= 360000 then
-        ply:ChatPrint('Thankyou for your endless support of Pootis Network.')
+        ply:ChatPrint('Thank you for your endless support of Pootis Network.')
         ply:ChatPrint('You have been promoted to Respected [4]')
         ply:ChatPrint('This is currently the final respected rank.')
         ply:SetUserGroup( 'respected4' )
