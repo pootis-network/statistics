@@ -1,8 +1,14 @@
+--- This is a heavily modified version of statistics for our website,
+--- if you wish to use this addon:
+--- Please use the Master or noGameStats branch, this branch is
+--- for noGameStats with a custom database structure.
+
 local db = STATS.Database
-STATS.Queries['username_update2'] = db:prepare('INSERT INTO known_usernames VALUES(?, ?) ON DUPLICATE KEY UPDATE username = VALUES(username)')
-STATS.Queries['playtime_get2'] = db:prepare('SELECT playtime FROM playtime_new WHERE steamid64 = ? AND gamemode = ?')
-STATS.Queries['playtime_new2'] = db:prepare('INSERT IGNORE INTO playtime_new VALUES(?, ?, 0)')
-STATS.Queries['playtime_update2'] = db:prepare('UPDATE playtime_new SET playtime = ? WHERE steamid64 = ? AND gamemode = ? AND playtime < ?')
+--- for reference: DB structure = SteamID64, name, first joined time, last seen time, playtime
+STATS.Queries['username_update2'] = db:prepare('UPDATE '..STATS.DB_PREFIX..'_users SET name = ? WHERE steamid64 = ?')
+STATS.Queries['playtime_get2'] = db:prepare('SELECT playtime FROM '..STATS.DB_PREFIX..'_users WHERE steamid64 = ?')
+STATS.Queries['playtime_new2'] = db:prepare('INSERT IGNORE INTO '..STATS.DB_PREFIX..'_users VALUES(?, ?, ?, ?, 0)')
+STATS.Queries['playtime_update2'] = db:prepare('UPDATE '..STATS.DB_PREFIX..'_users SET playtime = ? WHERE steamid64 = ? AND playtime < ?')
 
 -- Get the gamemode name
 -- This has an extra check for Minigames
@@ -26,9 +32,11 @@ function STATS:GetInitialPlaytime(ply)
     if not ply.Jointime then ply.Jointime = os.time() end
     if ply.Playtime then return end
 
+    local name = ply:Nick()
+    if not name then return end
+
     local get_query = STATS.Queries['playtime_get2']
     get_query:setString(1, id)
-    get_query:setString(2, STATS:GetGamemodeName())
     function get_query:onSuccess(data)
         if type(data) == 'table' and #data > 0 then
             -- Load the existing playtime value
@@ -38,11 +46,14 @@ function STATS:GetInitialPlaytime(ply)
                 hook.Call('StatisticsFetchedPlaytime', nil, ply, data[1].playtime)
             end)
         else
-            -- No playtime record currently exists for this gamemode
-            -- Insert 0 playtime
+            -- No player record currently exists for this user
+            -- Insert data
             local new_query = STATS.Queries['playtime_new2']
             new_query:setString(1, id)
-            new_query:setString(2, STATS:GetGamemodeName())
+            new_query:setString(2, name)
+            new_query:setString(3, ply.Jointime)
+            new_query:setString(4, ply.Jointime)
+
             new_query:start()
         end
     end
@@ -61,8 +72,8 @@ function STATS:UpdateUsername(ply)
     if not name then return end
 
     local name_query = STATS.Queries['username_update2']
-    name_query:setString(1, id)
-    name_query:setString(2, name)
+    name_query:setString(1, name)
+    name_query:setString(2, id)
     name_query:start()
 end
 
@@ -80,8 +91,7 @@ function STATS:UpdatePlaytime(ply)
     local update_query = STATS.Queries['playtime_update2']
     update_query:setNumber(1, newtime)
     update_query:setString(2, id)
-    update_query:setString(3, STATS:GetGamemodeName())
-    update_query:setNumber(4, newtime) -- Ensure consistency
+    update_query:setNumber(3, newtime) -- Ensure consistency
     update_query:start()
 end
 
@@ -93,7 +103,7 @@ end)
 hook.Add('UpdateStatistics', 'UpdatePlaytimeStatistics', function(ply) STATS:UpdatePlaytime(ply) end)
 
 -- ULX role management based on playtime
-hook.Add('StatisticsFetchedPlaytime', 'PlaytimeMaestroRoles', function(ply, playtime)
+hook.Add('StatisticsFetchedPlaytime', 'PlaytimeULXRoles', function(ply, playtime)
     -- no gamemode checks, only check for ULX and some sanity checks.
     --if GAMEMODE_NAME != 'murder' then return end
 

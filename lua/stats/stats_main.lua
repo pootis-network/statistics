@@ -41,4 +41,3 @@ end)
 -- Load component modules
 include('stats_playtime.lua')
 include('stats_donor.lua')
-include('stats_location.lua')
