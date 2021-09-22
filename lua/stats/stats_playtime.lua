@@ -5,10 +5,10 @@
 
 local db = STATS.Database
 --- for reference: DB structure = SteamID64, name, first joined time, last seen time, playtime
-STATS.Queries['username_update2'] = db:prepare('UPDATE '..STATS.DB_PREFIX..'_users SET name = ? WHERE steamid64 = ?')
-STATS.Queries['playtime_get2'] = db:prepare('SELECT playtime FROM '..STATS.DB_PREFIX..'_users WHERE steamid64 = ?')
+STATS.Queries['username_update2'] = db:prepare('UPDATE '..STATS.DB_PREFIX..'_users SET name = ? WHERE steamid = ?')
+STATS.Queries['playtime_get2'] = db:prepare('SELECT playtime FROM '..STATS.DB_PREFIX..'_users WHERE steamid = ?')
 STATS.Queries['playtime_new2'] = db:prepare('INSERT IGNORE INTO '..STATS.DB_PREFIX..'_users VALUES(?, ?, ?, ?, 0)')
-STATS.Queries['playtime_update2'] = db:prepare('UPDATE '..STATS.DB_PREFIX..'_users SET playtime = ? WHERE steamid64 = ? AND playtime < ?')
+STATS.Queries['playtime_update2'] = db:prepare('UPDATE '..STATS.DB_PREFIX..'_users SET playtime = ?, lastseen = ? WHERE steamid = ? AND playtime < ?')
 
 -- Get the gamemode name
 -- This has an extra check for Minigames
@@ -90,8 +90,9 @@ function STATS:UpdatePlaytime(ply)
 
     local update_query = STATS.Queries['playtime_update2']
     update_query:setNumber(1, newtime)
-    update_query:setString(2, id)
-    update_query:setNumber(3, newtime) -- Ensure consistency
+    update_query:setNumber(2, os.time())
+    update_query:setString(3, id)
+    update_query:setNumber(4, newtime) -- Ensure consistency
     update_query:start()
 end
 
